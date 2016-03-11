@@ -28,6 +28,8 @@ no warnings 'experimental';
 sub tokenize {
 	chomp(my $expr = shift);
 	my @res;
+	
+	my @res = ($expr =~ /[*^]|[-+]|[\/]|[(]|[)]|\d*[.]?\d(?:[eE][-+]\d+)?/g);
 
 	# ...
 
