@@ -29,9 +29,26 @@ sub tokenize {
 	chomp(my $expr = shift);
 	my @res;
 	
-	my @res = ($expr =~ /[*^]|[-+]|[\/]|[(]|[)]|\d*[.]?\d(?:[eE][-+]\d+)?/g);
+	@res = ($expr =~ /[*^]|[-+]|[\/]|[(]|[)]|\d*[.]?\d(?:[eE][-+]?\d+)?/g);
+	
+	for (0..$#res) { #string processing
+	
+		#Unary operators processing
+		if ($res[$_] =~ /^[-+]$/ and (!$_ or $res[$_-1] =~ m|^[-+*^/(]|)) {$res[$_] = 'U'.$res[$_];}
 
-	# ...
+		#Is unary operators correct?
+		if ($res[$_] =~ /^U[-+]$/ and ($_ == $#res or $res[$_+1] =~ m|[-+*^/)]|)) {die "Not a number after unary operator (".($_+2)." element of expression)"}
+
+		#Numbers processing
+		if ($res[$_] =~ /\d*[.]?\d+(?:[eE][-+]?\d+)?/) {
+			$res[$_] += 0;
+			if (($_ != $#res and $res[$_+1] =~ /\d/) or ($_ and $res[$_-1] =~ /\d/)) {die "Too many operands but no operators ($_ element)"}
+		} 
+
+		#Is binary operators correct?
+		if ($res[$_] =~ m|^[-+*^/]$| and (($_ == $#res or $res[$_+1] !~ /\(|\d|\U[-+]/) or (!$_ or $res[$_-1] !~ /\)|\d/))) {die "Binary operator has less then 2 operands (".($_+1)." element)"} 
+
+	}
 
 	return \@res;
 }
