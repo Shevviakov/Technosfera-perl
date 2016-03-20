@@ -34,10 +34,13 @@ sub tokenize {
 	for (0..$#res) { #string processing
 	
 		#Unary operators processing
-		if ($res[$_] =~ /^[-+]$/ and (!$_ or $res[$_-1] =~ m{[-+*^/(]|U[-+]})) {$res[$_] = 'U'.$res[$_];}
+		if ($res[$_] =~ /^[-+]$/ and (!$_ or $res[$_-1] =~ m{^(?:[-+*^/(]|U[-+])$})) {$res[$_] = 'U'.$res[$_];}
+		}
 
+	for (0..$#res) {
+		
 		#Is unary operators correct?
-		if ($res[$_] =~ /^U[-+]$/ and ($_ == $#res or $res[$_+1] =~ m|[-+*^/)]|)) {die "Not a number after unary operator (".($_+2)." element of expression)"}
+		if ($res[$_] =~ /^U[-+]$/ and ($_ == $#res or $res[$_+1] =~ m|^[-+*^/)]$|)) {die "Not a number after unary operator (".($_+2)." element of expression)"}
 
 		#Numbers processing
 		if ($res[$_] =~ /\d*[.]?\d+(?:[eE][-+]?\d+)?/) {
@@ -46,7 +49,7 @@ sub tokenize {
 		} 
 
 		#Is binary operators correct?
-		if ($res[$_] =~ m|^[-+*^/]$| and (($_ == $#res or $res[$_+1] !~ /\(|\d|U[-+]/) or (!$_ or $res[$_-1] !~ /\)|\d/))) {die "Binary operator has less then 2 operands (".($_+1)." element)"} 
+		if ($res[$_] =~ m|^[-+*^/]$| and ($_ != $#res and $res[$_+1] !~ /\(|\d|U[-+]/) and ($_ != 0 and $res[$_-1] =~ /\)|\d/)) {die "Binary operator has less then 2 operands (".($_+1)." element)"} 
 
 	}
 
