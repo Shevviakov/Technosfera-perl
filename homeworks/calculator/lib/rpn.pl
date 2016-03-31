@@ -22,40 +22,35 @@ no warnings 'experimental';
 use FindBin;
 require "$FindBin::Bin/../lib/tokenize.pl";
 
+sub priority {
+	my $op = shift;
+	given ($op) {
+		when (/^U[-+]$/) {return 3}
+		when (/^\^$/) {return 3}
+		when (m{^[*/]$}) {return 2}
+		when (/^[-+]$/) {return 1}
+		when (/^[()]$/) {return 0}
+	}
+	
+}
+
 sub rpn {
 	my $expr = shift;
 	my $source = tokenize($expr);
 	my @rpn;
-	
+
 	my @stck;
 
 	for (@$source) {
-		given ($_) {
-			when (/^U[-+]$/) {push @stck, $_}
-			when (/^\^$/) {
-				while (@stck and $stck[-1] =~ /^U[-+]$/) {
-					push @rpn, pop (@stck)
-				}
-				push @stck, $_
-			}
-			when (m{^[*/]$}) {
-				while (@stck and $stck[-1] =~ m{U[-+]|[*/]}) {
-					push @rpn, pop @stck
-				}
-				push @stck, $_
-			}
-			when (/^[-+]$/) {
-				while (@stck and $stck[-1] =~ m{^(?:U[-+]|[*/]|[-+])$}) {
-					push @rpn, pop @stck
-				} 
-				push @stck, $_
-			}
-			when (/^\($/) {push @stck, $_}
-			when (/^\)$/) {while ($stck[-1] ne "(") {push @rpn, pop@stck} pop@stck}
-			when (/\d+/) {push @rpn, $_}
+		if (/\d+/) {push @rpn, $_; next}
+		if (/^\($/) {push @stck, $_; next}
+		if (/^\)$/) {while (@stck and $stck[-1] ne '(') {push @rpn, pop @stck} pop @stck; next}
+		while (@stck and priority($stck[-1]) >= priority($_)) {
+			if (priority($stck[-1]) == priority ($_) and priority($_) > 2) {last} #right... ops condition
+			push @rpn, pop @stck;
 		}
+		push @stck, $_;
 	}
-	
 	while (@stck) {push @rpn, pop @stck}
 	# ...
 	

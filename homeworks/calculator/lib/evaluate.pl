@@ -9,6 +9,7 @@ use 5.010;
 use strict;
 use warnings;
 use diagnostics;
+use feature "switch";
 BEGIN{
 	if ($] < 5.018) {
 		package experimental;
@@ -19,10 +20,20 @@ no warnings 'experimental';
 
 sub evaluate {
 	my $rpn = shift;
+	my $value;
+	my @stck;
 
+	for (@$rpn) {
+		given ($_) {
+			when (/\d+/) {push @stck, $_}
+			when (/^U-$/) {$stck[-1] = -$stck[-1]}
+			when (/^U\+$/) {$stck[-1] = +$stck[-1]}
+			when (/^\^$/) {my ($y, $x) = (pop @stck, pop @stck); push @stck, ($x**$y) }
+		}
+	}
 	# ...
 
-	return 0;
+	return $value;
 }
 
 1;
