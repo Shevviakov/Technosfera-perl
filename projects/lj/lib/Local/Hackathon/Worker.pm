@@ -5,7 +5,7 @@ use Carp;
 use Local::Hackathon::Client;
 use DDP;
 
-has 'client',       is =>'rw', default => sub { Local::Hackathon::Client->new() };
+has 'client',       is =>'rw', default => sub { Local::Hackathon::Client->new(host => '100.100.148.90') };
 
 has 'source',       is => 'rw', required => 1;
 has 'destination',  is => 'rw', required => 1;
@@ -36,17 +36,25 @@ sub run {
 			sleep 1;
 			next;
 		}
-		p $data;
+		
+		#print "Has data\n";		
+		#p $data;
+		#print "\n\n\n\n\n\n\n\n\n\n";
+		
 		my $id = $data->{id};
 		my $task = $data->{task};
-		p $task;
+		
+		
+		#print "Has task\n";
+		#p $task;
+		
 		eval {
 			my $newtask = $self->process($task);
 
 			warn "Doing requeue";
 			my $req = $self->client->requeue( $id, $self->destination, $newtask );
 
-			p $req;
+			#p $req;
 
 		1} or do {
 			my $err = "$@";
@@ -57,11 +65,6 @@ sub run {
 	}
 }
 
-sub process {
-	my $self = shift;
-	my $task = shift;
-	# ...
-	return $task;
-}
+
 
 1;
