@@ -49,7 +49,7 @@ sub tokenize {
 		} 
 
 		#Is binary operators correct?
-		if ($res[$_] =~ m|^[-+*^/]$| and ($_ != $#res and $res[$_+1] !~ /\(|\d|U[-+]/) and ($_ != 0 and $res[$_-1] =~ /\)|\d/)) {die "Binary operator has less then 2 operands (".($_+1)." element)"} 
+		if ($res[$_] =~ m|^[-+*^/]$| and ($_ == $#res or $res[$_+1] !~ /\(|\d|U[-+]/) and ($_ == 0 or $res[$_-1] =~ /\)|\d/)) {die "Binary operator has less then 2 operands (".($_+1)." element)"} 
 
 	}
 

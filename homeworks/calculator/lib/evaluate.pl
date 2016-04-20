@@ -29,9 +29,14 @@ sub evaluate {
 			when (/^U-$/) {$stck[-1] = -$stck[-1]}
 			when (/^U\+$/) {$stck[-1] = +$stck[-1]}
 			when (/^\^$/) {my ($y, $x) = (pop @stck, pop @stck); push @stck, ($x**$y) }
+			when (/^\*$/) {my ($y, $x) = (pop @stck, pop @stck); push @stck, ($x*$y) }
+			when (/^\/$/) {my ($y, $x) = (pop @stck, pop @stck); push @stck, ($x/$y) }
+			when (/^\-$/) {my ($y, $x) = (pop @stck, pop @stck); push @stck, ($x-$y) }
+			when (/^\+$/) {my ($y, $x) = (pop @stck, pop @stck); push @stck, ($x+$y) }
 		}
 	}
-	# ...
+	
+	$value = shift @stck;
 
 	return $value;
 }
