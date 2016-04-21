@@ -32,4 +32,14 @@ our $VERSION = '1.00';
 
 =cut
 
+sub import {
+        my ($selfpkg, @vars) = @_;
+        my $pkg = caller;
+        for my $var (@vars) {
+                no strict 'refs';
+                *{$pkg."::get_".$var} = sub {return  ${$pkg."::".$var}};
+                *{$pkg."::set_".$var} = sub {${$pkg."::".$var} = shift}
+        }
+}       
+
 1;
