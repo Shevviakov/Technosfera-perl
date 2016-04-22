@@ -37,30 +37,52 @@ sub parseEntry {
 }
 
 ########
-use DDP;
+#use DDP;
+use Data::Dumper;
+use feature 'say';
 #######
 
 sub printTable {
 	my ($libr, $opts) = @_;
 	my @resultTable;
 #make with for
-	my %colWidth = (
-                band   => 0,
-                year    => 0,
-                album   => 0,
-                track   => 0,
-                format  => 0 );
+#	print Dumper ($libr);
+	my %colwidth;
+	for (keys %$libr[0]) {$colwidth{$_} = 0}
+	print Dumper ( %colwidth);
 
-	for (@$libr) {
-		#p $$_{band};
-#make with for
-		if ($$opts{band} and $$opts{band} ne $$_{band}) {next}
-		if ($$opts{album} and $$opts{album} ne $$_{album}) {next}
-		if ($$opts{track} and $$opts{track} ne $$_{track}) {next}
-		if ($$opts{format} and $$opts{format} ne $$_{format}) {next}
-		if ($$opts{band} and $$opts{band} ne $$_{band}) {next}
-		push @resultTable, $_;
+	for my $entry (@$libr) {
+#		#p $$_{band};
+#		print Dumper ($entry);
+		my $nxt = "";
+		for (keys %$entry) {
+			if ($_ ne "year") { 
+				if ($$opts{$_} and $$opts{$_} ne $$entry{$_}) {$nxt = 1; last;}
+			} else {
+				if ($$opts{$_} and $$opts{$_} != $$entry{$_}) {$nxt = 1; last;}
+			}
+		}
+		
+		if ($nxt) {next};
+		push @resultTable, $entry;
+		for (keys %$entry) {
+			if (length $$entry{$_} > $colwidth{$_}) {$colwidth{$_} = length $$entry{$_}}
+		}
 	}
-	p @resultTable;
+	print Dumper (%colwidth);
+	
+	if ($$opts{sort}) { 
+			say "sort by $$opts{sort}";
+			if ($$opts{sort} ne "year") { 
+				@resultTable = sort {$$a{$$opts{sort}} cmp $$b{$$opts{sort}}} @resultTable
+			} else {
+				@resultTable = sort {$$a{$$opts{sort}} <=> $$b{$$opts{sort}}} @resultTable
+			}
+	}
+	
+	
+	
+	print Dumper (@resultTable);
+
 }
 1;

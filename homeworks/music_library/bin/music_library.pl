@@ -11,7 +11,7 @@ use Getopt::Long;
 
 #####
 use feature 'say';
-use DDP;
+#use DDP;
 #####
 
 my %opts;
@@ -26,7 +26,7 @@ GetOptions (
 
 if ($opts{columns}) {@{$opts{columns}} = split (/,/, join (',', @{$opts{columns}}))}
 
-p %opts;
+#p %opts;
 my @libr;
 
 
