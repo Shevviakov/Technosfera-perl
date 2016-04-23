@@ -9,11 +9,7 @@ use lib "$Bin/../lib";
 use Local::MusicLibrary qw(parseEntry printTable);
 use Getopt::Long;
 
-#####
-use feature 'say';
-#use DDP;
-#####
-
+#taking parameters from command line
 my %opts;
 GetOptions (
 	'band=s'	=> \$opts{band},
@@ -23,15 +19,13 @@ GetOptions (
 	'format=s'	=> \$opts{format},
 	'sort=s'	=> \$opts{sort},
 	'columns=s@'	=> \$opts{columns} );
-
 if ($opts{columns}) {@{$opts{columns}} = split (/,/, join (',', @{$opts{columns}}))}
 
-#p %opts;
+#reading STDIN
 my @libr;
-
-
 while (<>) {
 	push @libr, parseEntry($_);
 }
 
+#printing result
 printTable (\@libr, \%opts);
