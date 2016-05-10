@@ -45,8 +45,20 @@ sub parse_json {
 				\s* \]
 			)
 			(?<STRING>
-				(" (?: \\["\/bnfrt] | \\u\d{4} | [^"\\] )* ")
-				(?{my $str = $^N; $str =~ s{\\u(\d{4})}(\\x\{$1\})g; [$^R, eval $str ] })
+				"( (?: \\["\/bnfrt] | \\\\ |\\u[\dA-Fa-f]{4} | [^"\\] )* )"
+				(?{
+					my $str = $^N; 
+					$str =~ s{\\u([\dA-Fa-f]{4})}(chr(hex($1)))ge; 
+					$str =~ s{\\t}(chr(9))ge;
+					$str =~ s{\\b}(chr(8))ge;
+					$str =~ s{\\n}(chr(10))ge;
+					$str =~ s{\\f}(chr(12))ge;
+					$str =~ s{\\r}(chr(13))ge;
+					$str =~ s{\\\/}(\/)g;
+					$str =~ s{\\"}(")g;
+					$str =~ s{\\\\}(\\)g;
+					[$^R, $str ] 
+				})
 			)
 			(?<NUMBER>
 				( -?\d+(?:\.\d+)? (?:[eE][-+]?\d+)? )
