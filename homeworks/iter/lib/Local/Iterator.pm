@@ -3,6 +3,19 @@ package Local::Iterator;
 use strict;
 use warnings;
 
+use Moose;
+
+sub all {
+	my ($self) = @_;
+	my @arr;
+	my ($val, $end) = $self->next;
+	while (!$end) {
+		push @arr, $val;
+		($val, $end) = $self->next;
+	}
+	return \@arr;
+}
+
 =encoding utf8
 
 =head1 NAME
