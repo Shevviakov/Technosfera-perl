@@ -1,8 +1,12 @@
 package Local::App::GenCalc;
 
 use strict;
+use warnings;
+use Time::HiRes qw/alarm/;
+use IO::Socket;
 
 my $file_path = './calcs.txt';
+
 
 sub new_one {
     # Функция вызывается по таймеру каждые 100
@@ -20,12 +24,15 @@ sub new_one {
                   int(rand(10)).' + .5e-1', 
                   int(rand(10)).' + .5e+1 * 2';
     # Далее происходить запись в файл очередь
-    ...
+	open (my $fh, '>>', $file_path) or die "Can't open '$file_path' to append: $!";
+	if (-s $file_path <= 10000000) {print $fh, $new_row;}
+	close ($fh);
+
     return;
 }
 
 #Определение обрабатываемых сигналов
-$SIG{...} = \&...;
+#$SIG{...} = \&...;
 
 sub start_server {
     # На вход приходит номер порта который будет слушат сервер для обработки запросов на получение данных
@@ -40,10 +47,26 @@ sub get {
     my $limit = shift;
 
     # Открытие файла, чтение N записей
-    # Надо предусмотреть, что файла может не быть, а так же в файле может быть меньше сообщений чем запрошено
-    my $ret = []; # Возвращаем ссылку на массив строк
+	new_one() unless (-e $file_path);
+	open (my $fh, '<', $file_path) or die "Can't open '$file_path' to read: $!"; 
+	my @file = <$fh>;
+	close($fh);
 
-    return $ret;
+    # Надо предусмотреть, что файла может не быть, а так же в файле может быть меньше сообщений чем запрошено
+	while (@file <= $limit) {
+		new_one();
+		open (my $fh, '<', $file_path) or die "Can't open '$file_path' to read: $!"; 
+		my @new_list = <$fh>;
+		close($fh);
+		push @file, @new_list;
+	}
+	
+	#Записываем остаток в файл
+	open (my $fh, '>', $file_path) or die "Can't open '$file_path' to append: $!";
+	print $fh, (join $/, @file[$limit..$#file]);
+	my @ret = @file[0..($limit-1)]; # Возвращаем ссылку на массив строк
+
+    return \@ret;
 }
 
 1;
