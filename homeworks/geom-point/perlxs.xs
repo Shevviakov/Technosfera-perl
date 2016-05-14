@@ -149,3 +149,73 @@ double distance3d_pointstruct(point1, point2)
     RETVAL = ret;
     OUTPUT:
     RETVAL
+
+
+
+SV *matrix_multiply (matr1, matr2)
+	SV * matr1
+	SV * matr2
+	
+	CODE:
+	AV *result_matr;
+	AV *row;
+	SSize_t numcols, numrows, midindex, n, m, k;
+	if(!(SvOK(matr1) && SvROK(matr1) && (SvTYPE(SvRV(matr1))==SVt_PVAV))) {
+		croak("First matrix argument must be an arrayref");
+	}
+	if(!(SvOK(matr2) && SvROK(matr2) && (SvTYPE(SvRV(matr2))==SVt_PVAV))){
+		croak("Second matrix argument must be an arrayref");
+	}
+	numrows = av_top_index((AV*)SvRV(matr1));
+	row = (AV*)(SvRV(*av_fetch((AV*)SvRV(matr1), 0, 0)));
+	midindex = av_top_index(row);
+
+	double m1[numrows+1][midindex+1];
+	
+	for (n=0; n<=numrows; n++) {
+		row = (AV*)(SvRV(*av_fetch((AV*)SvRV(matr1), n, 0)));
+		if (av_top_index(row) != midindex) {croak ("First matrix has rows of different lengths");}
+		for (m=0; m<=midindex; m++) {
+			m1[n][m] = SvNV(*av_fetch(row, m, 0));
+		} 
+	}
+	
+	if (midindex != av_top_index((AV*)SvRV(matr2))) {
+		croak ("Matrix can't be multiplied because number of columns of first matrix differs from number of rows of second matrix");
+	}
+	row = (AV*)(SvRV(*av_fetch((AV*)SvRV(matr2), 0, 0)));
+	numcols = av_top_index(row);
+	
+	//using the transposed representation for acceleration
+	double m2[numcols+1][midindex+1];
+	for (n=0; n<=midindex; n++) {
+		row = (AV*)(SvRV(*av_fetch((AV*)SvRV(matr2), n, 0)));
+		if (av_top_index(row) != numcols) {croak ("First matrix has rows of different lengths");}
+		for (m=0; m<=numcols; m++) {
+			m2[m][n] = SvNV(*av_fetch(row, m, 0));
+		} 
+	}
+	
+	//Calculating
+	double result[numrows+1][numcols+1];
+	for (n=0; n<=numrows; n++) {
+		for (m=0; m<=numcols; m++) {
+			result[n][m] = 0;
+			for (k=0; k<=midindex; k++){
+				result[n][m] += m1[n][k] * m2[m][k];
+			}
+		}
+	}
+	
+	result_matr = (AV*)sv_2mortal((SV*)newAV());
+	for (n=0; n<=numrows; n++) {
+		row = (AV*)sv_2mortal((SV*)newAV()); 	
+		for (m=0; m<=numcols; m++) {
+			av_push(row, newSVnv(result[n][m]));
+		}
+		av_push(result_matr, newRV((SV*)row));
+	}
+	
+	RETVAL = newRV((SV *)result_matr);
+	OUTPUT:
+	RETVAL
