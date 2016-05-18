@@ -9,6 +9,7 @@
 
 typedef struct { double x, y; } GEOM_POINT;
 typedef struct { double x, y, z; } GEOM_POINT_3D;
+typedef struct { double x, y, r; } CIRCLE;
 
 MODULE = Local::perlxs                PACKAGE = Local::perlxs                
 
@@ -151,6 +152,41 @@ double distance3d_pointstruct(point1, point2)
     RETVAL
 
 
+
+
+double distance_circlestruct(point, circle)
+    GEOM_POINT *point
+    CIRCLE *circle
+    CODE:
+    double ret;
+    ret = abs( sqrt(pow(point->x-circle->x,2) + pow(point->y-circle->y,2)) - circle->r);
+    free(point);
+    free(circle);
+    RETVAL = ret;
+    OUTPUT:
+    RETVAL
+
+
+
+SV *crosspoint_circlestruct(point, circle)
+	GEOM_POINT *point
+	CIRCLE *circle
+	CODE:
+	HV* result_point;
+	double hyp, x, y;
+	hyp = sqrt(pow(point->x-circle->x,2) + pow(point->y-circle->y,2));
+	x = point->x - (point->x-circle->x)*(circle->r/hyp);
+	y = point->y - (point->y-circle->y)*(circle->r/hyp);
+	
+	result_point = (HV*)sv_2mortal((SV*)newHV());
+	hv_store(result_point, "x", 1, newSVnv(x), 0);
+	hv_store(result_point, "y", 1, newSVnv(y), 0);
+	
+	free(point);
+	free(circle);
+	RETVAL = newRV((SV *)result_point);
+	OUTPUT:
+	RETVAL
 
 SV *matrix_multiply (matr1, matr2)
 	SV * matr1

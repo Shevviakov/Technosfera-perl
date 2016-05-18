@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 14;
+use Test::More tests => 12;
 BEGIN { use_ok('Local::perlxs') };
 is(Local::perlxs::distance_point(1,1,1,3), 2);
 my($dist, $dx, $dy) = Local::perlxs::distance_ext_point(1,1,1,3);
@@ -25,8 +25,9 @@ $point1->{z} = 1;
 $point2->{z} = 1;
 is(Local::perlxs::distance3d_pointstruct($point1, $point2), 2);
 
-is(Local::perlxs::distance_call_point_2('Local::perlxs::get_points_2'), 5);
-is(Local::perlxs::distance_call_arg_point_2('Local::perlxs::get_points_2'), 5 );
+
+#is(Local::perlxs::distance_call_point_2('Local::perlxs::get_points_2'), 5);
+#is(Local::perlxs::distance_call_arg_point_2('Local::perlxs::get_points_2'), 5 );
 my $circle = {x => 1, y => 3, r => 1};
 is(Local::perlxs::distance_circlestruct($point1, $circle), 1);
 is_deeply(Local::perlxs::crosspoint_circlestruct($point1, $circle), {x=>1, y=>2});
